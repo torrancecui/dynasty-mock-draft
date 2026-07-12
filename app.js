@@ -360,6 +360,34 @@
       '<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:24px">No players match</td></tr>';
   }
 
+  // linear pick list — shown instead of the grid on small screens (CSS toggles)
+  function linearBoardHTML() {
+    let html = '<div class="board-linear">';
+    let lastRound = 0;
+    for (let i = 0; i < draft.pickOrder.length; i++) {
+      const po = draft.pickOrder[i];
+      if (po.round !== lastRound) {
+        lastRound = po.round;
+        html += `<div class="lin-round">Round ${po.round}</div>`;
+      }
+      const pick = draft.picks[i];
+      const isCur = i === draft.cur && !draft.done;
+      const cls = ['lin-pick'];
+      if (pick) cls.push('f-' + pick.player.pos);
+      if (isCur) cls.push('current');
+      if (po.team === settings.userSlot) cls.push('user-pick');
+      html += `<div class="${cls.join(' ')}">
+        <span class="lp-no">${pickLabel(i)}</span>
+        <span class="lp-body">${pick
+          ? `<span class="p-name"><span class="pos-badge pos-${pick.player.pos}">${pick.player.pos}</span>${pick.player.n}</span>
+             <span class="lp-meta">${pick.player.tm} · ${teamName(po.team)}</span>`
+          : `<span class="lp-empty">${isCur ? 'On the clock' : '—'}</span>
+             <span class="lp-meta">${teamName(po.team)}</span>`}</span>
+      </div>`;
+    }
+    return html + '</div>';
+  }
+
   function renderBoard() {
     const el = $('board-scroll');
     const T = settings.teams;
@@ -395,7 +423,11 @@
       html += '</tr>';
     }
     html += '</tbody></table>';
-    el.innerHTML = html;
+    el.innerHTML = html + linearBoardHTML();
+
+    // keep the current pick in view in the linear list
+    const cur = el.querySelector('.lin-pick.current');
+    if (cur && cur.offsetParent) el.scrollTop = cur.offsetTop - el.clientHeight / 2;
   }
 
   function rosterHTML(team) {
