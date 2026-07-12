@@ -6,6 +6,7 @@
   const SOURCES = [
     { key: 'ktc', ...DATA.sources.ktc },
     { key: 'fp', ...DATA.sources.fp },
+    { key: 'fc', ...DATA.sources.fc },
     { key: 'esp', ...DATA.sources.esp },
     { key: 'slp', ...DATA.sources.slp },
   ];

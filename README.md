@@ -17,13 +17,15 @@ node scripts/serve.js        # serves at http://localhost:8642
   - **KeepTradeCut** — LIVE: scraped superflex values with KTC's native 0.5 TE premium (TEP)
   - **FantasyPros** — LIVE: dynasty superflex expert consensus rankings, with a +9% TE value
     adjustment applied to approximate 0.5 TE premium (FP doesn't publish a TEP variant)
+  - **FantasyCalc** — LIVE: dynasty 2QB market values computed from real trades
+    (public API), same +9% TE-premium adjustment
   - **ESPN** — APPROX: ESPN has no machine-readable dynasty SF rankings, so this is a
     labeled approximation blended from the live sources (35% KTC / 65% FP) with a
     proven-production lean and deterministic jitter
   - **Sleeper** — APPROX: Sleeper has no public rankings API; approximation blended
     60% KTC / 40% FP with a youth/rookie lean
   - **Mixed** — each CPU team is randomly assigned one of the four sources
-- League settings: 8/10/12/14 teams, 5–30 rounds, snake / linear / 3rd-round-reversal,
+- League settings: 8/10/12/14 teams, 5–30 rounds, snake / linear / 3rd-round-reversal (default),
   pick your slot or randomize, CPU speed (instant / fast / realistic)
 - Sleeper-style draft room: pick ticker, color-coded draft board, searchable/filterable
   player pool (view any source's board), My Team + All Teams roster views
