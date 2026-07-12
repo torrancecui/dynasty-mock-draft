@@ -1,0 +1,41 @@
+name: Refresh rankings
+
+on:
+  schedule:
+    - cron: '17 13 * * *' # daily ~6:17 AM Pacific
+  workflow_dispatch: {} # allows manual runs from the Actions tab
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Rebuild rankings data
+        run: node scripts/build-data.js
+
+      - name: Commit and push if changed
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Refresh rankings $(date -u +%Y-%m-%d)"
+          git push
+
+      # pushes made with the workflow token don't auto-trigger the Pages build,
+      # so request one explicitly
+      - name: Trigger Pages build
+        run: gh api "repos/${{ github.repository }}/pages/builds" -X POST
+        env:
+          GH_TOKEN: ${{ github.token }}
