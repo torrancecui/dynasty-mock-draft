@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynasty Mock Draft Simulator</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ============ SETUP SCREEN ============ -->
+  <div id="setup-screen" class="screen">
+    <div class="setup-card">
+      <div class="setup-header">
+        <h1>🏈 Dynasty Mock Draft</h1>
+        <p class="subtitle">Superflex &middot; 0.5 TE Premium &middot; Startup</p>
+        <p class="data-badge" id="data-badge"></p>
+      </div>
+
+      <div class="setup-section">
+        <label class="section-label">CPU Ranking Source</label>
+        <div class="source-grid" id="source-grid"></div>
+      </div>
+
+      <div class="setup-section settings-grid">
+        <div class="setting">
+          <label for="set-teams">Teams</label>
+          <select id="set-teams">
+            <option value="8">8</option>
+            <option value="10">10</option>
+            <option value="12" selected>12</option>
+            <option value="14">14</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="set-slot">Your Pick</label>
+          <select id="set-slot"></select>
+        </div>
+        <div class="setting">
+          <label for="set-rounds">Rounds</label>
+          <select id="set-rounds">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="12">12</option>
+            <option value="15" selected>15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
+            <option value="30">30</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="set-order">Draft Order</label>
+          <select id="set-order">
+            <option value="snake" selected>Snake</option>
+            <option value="3rr">Snake + 3rd Rd Reversal</option>
+            <option value="linear">Linear</option>
+          </select>
+        </div>
+        <div class="setting">
+          <label for="set-speed">CPU Speed</label>
+          <select id="set-speed">
+            <option value="instant">Instant</option>
+            <option value="fast" selected>Fast</option>
+            <option value="slow">Realistic</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="start-btn" class="primary-btn">Start Draft</button>
+      <p class="source-note" id="source-note"></p>
+    </div>
+  </div>
+
+  <!-- ============ DRAFT ROOM ============ -->
+  <div id="draft-screen" class="screen hidden">
+    <header class="draft-header">
+      <div class="dh-left">
+        <span class="dh-logo">🏈 Dynasty Mock</span>
+        <span class="dh-settings" id="dh-settings"></span>
+      </div>
+      <div class="dh-status" id="dh-status"></div>
+      <div class="dh-right">
+        <label class="autopick-toggle"><input type="checkbox" id="autopick-cb" /> Autopick me</label>
+        <button id="new-draft-btn" class="ghost-btn">New Draft</button>
+      </div>
+    </header>
+
+    <div class="ticker" id="ticker"></div>
+
+    <div class="draft-main">
+      <!-- Players panel -->
+      <section class="players-panel">
+        <div class="pp-controls">
+          <input type="text" id="search-input" placeholder="Search players..." />
+          <select id="view-source" title="Rankings shown in this list"></select>
+        </div>
+        <div class="pos-chips" id="pos-chips">
+          <button class="chip active" data-pos="ALL">All</button>
+          <button class="chip chip-qb" data-pos="QB">QB</button>
+          <button class="chip chip-rb" data-pos="RB">RB</button>
+          <button class="chip chip-wr" data-pos="WR">WR</button>
+          <button class="chip chip-te" data-pos="TE">TE</button>
+          <button class="chip" data-pos="RK">Rookies</button>
+        </div>
+        <div class="player-table-wrap">
+          <table class="player-table">
+            <thead>
+              <tr><th class="col-rank">RK</th><th>Player</th><th class="col-age">Age</th><th class="col-val">Value</th><th class="col-act"></th></tr>
+            </thead>
+            <tbody id="player-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Right panel -->
+      <section class="right-panel">
+        <div class="tab-bar">
+          <button class="tab active" data-tab="board">Draft Board</button>
+          <button class="tab" data-tab="myteam">My Team</button>
+          <button class="tab" data-tab="teams">All Teams</button>
+        </div>
+        <div class="tab-content" id="tab-board">
+          <div class="board-scroll" id="board-scroll"></div>
+        </div>
+        <div class="tab-content hidden" id="tab-myteam"></div>
+        <div class="tab-content hidden" id="tab-teams">
+          <div class="teams-select-row">
+            <select id="teams-select"></select>
+          </div>
+          <div id="teams-roster"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS MODAL ============ -->
+  <div id="results-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2>Draft Complete 🎉</h2>
+      <div id="results-body"></div>
+      <div class="modal-actions">
+        <button id="export-btn" class="ghost-btn">Download CSV</button>
+        <button id="results-close" class="ghost-btn">View Draft Room</button>
+        <button id="results-new" class="primary-btn">New Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="rankings-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
