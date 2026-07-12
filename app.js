@@ -10,7 +10,7 @@
     { key: 'esp', ...DATA.sources.esp },
     { key: 'slp', ...DATA.sources.slp },
   ];
-  const SPEED_MS = { instant: 25, fast: 500, slow: 1500 };
+  const CPU_PICK_MS = 500;
 
   // ---------- state ----------
   let settings = null; // {sourceKey, teams, rounds, order, speed, userSlot}
@@ -46,6 +46,11 @@
       grid.appendChild(btn);
     }
     $('source-note').textContent = SOURCES[0].note;
+
+    $('set-rounds').innerHTML = Array.from({ length: 21 }, (_, i) => {
+      const r = i + 5;
+      return `<option value="${r}"${r === 15 ? ' selected' : ''}>${r}</option>`;
+    }).join('');
 
     const refreshSlots = () => {
       const n = +$('set-teams').value;
@@ -86,7 +91,6 @@
       teams,
       rounds,
       order: $('set-order').value,
-      speed: $('set-speed').value,
       userSlot: slotVal === 'rand' ? Math.floor(Math.random() * teams) : +slotVal - 1,
     };
 
@@ -256,29 +260,13 @@
     scheduleNext();
   }
 
-  // process every CPU (and autopicked user) pick synchronously, then render once
-  function runInstantBatch() {
-    while (!draft.done) {
-      const po = draft.pickOrder[draft.cur];
-      const isUser = po.team === settings.userSlot;
-      if (isUser && !$('autopick-cb').checked) break;
-      applyPick(isUser ? userAutoChoose() : cpuChoose(po.team));
-    }
-    renderAll();
-    if (draft.done) showResults();
-  }
-
   function scheduleNext() {
     clearTimeout(cpuTimer);
     if (draft.done) return;
     const po = draft.pickOrder[draft.cur];
     const isUser = po.team === settings.userSlot;
     if (isUser && !$('autopick-cb').checked) return; // wait for the human
-    if (settings.speed === 'instant') {
-      cpuTimer = setTimeout(runInstantBatch, 60);
-      return;
-    }
-    const delay = isUser ? 350 : SPEED_MS[settings.speed];
+    const delay = isUser ? 350 : CPU_PICK_MS;
     cpuTimer = setTimeout(() => {
       const player = isUser ? userAutoChoose() : cpuChoose(po.team);
       makePick(player);
