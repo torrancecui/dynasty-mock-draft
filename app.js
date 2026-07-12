@@ -24,7 +24,7 @@
 
   function initSetup() {
     $('data-badge').textContent =
-      `KTC & FantasyPros data fetched live ${DATA.generated} · ${DATA.players.length} players`;
+      `Rankings updated ${DATA.generated} · ${DATA.players.length} players`;
 
     const grid = $('source-grid');
     const cards = [...SOURCES, { key: 'mix', name: 'Mixed', real: null, note: 'Each CPU team is randomly assigned one of the four sources.' }];
