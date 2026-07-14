@@ -1,5 +1,7 @@
 # Dynasty Mock Draft Simulator
 
+https://torrancecui.github.io/dynasty-mock-draft/
+
 A Sleeper-style dynasty startup mock draft web app. You draft against CPU teams
 that pick from real dynasty rankings — **superflex, 0.5 TE premium** across the board.
 
