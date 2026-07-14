@@ -597,6 +597,27 @@
       return `<div class="src-col"><h4>${s.name}${s.real === false ? ' <span class="sc-tag approx">APPROX</span>' : ''}</h4>${items}</div>`;
     });
     $('as-cols').innerHTML = cols.join('');
+
+    // ---- history: every mark in draft order, newest first ----
+    $('as-history-head').textContent = `Draft history (${assist.order.length})`;
+    if (!assist.order.length) {
+      $('as-history-list').innerHTML =
+        '<div class="roster-empty">No players marked yet — they\'ll show up here in draft order.</div>';
+    } else {
+      const items = [];
+      for (let i = assist.order.length - 1; i >= 0; i--) {
+        const p = byId.get(assist.order[i]);
+        items.push(`<div class="hist-row">
+          <span class="hist-no">${i + 1}</span>
+          <span class="hist-body">
+            <span class="p-name"><span class="pos-badge pos-${p.pos}">${p.pos}</span>${p.n}</span>
+            <span class="hist-meta">${p.tm}</span>
+          </span>
+          <button class="hist-undo" data-undo="${p.id}" title="Undo this pick">✕</button>
+        </div>`);
+      }
+      $('as-history-list').innerHTML = items.join('');
+    }
   }
 
   function assistRow(p, srcKey, gone) {
@@ -656,6 +677,10 @@
     $('as-cols').addEventListener('click', (e) => {
       const row = e.target.closest('.src-row');
       if (row) assistMark(+row.dataset.id);
+    });
+    $('as-history-list').addEventListener('click', (e) => {
+      const undo = e.target.closest('[data-undo]');
+      if (undo) assistUnmark(+undo.dataset.undo);
     });
   }
 
