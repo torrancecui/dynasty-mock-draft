@@ -502,6 +502,163 @@
     URL.revokeObjectURL(a.href);
   }
 
+  // ================= DRAFT ASSISTANT =================
+  const AS_STORE_KEY = 'dmdAssistDrafted';
+  const assist = { drafted: new Set(), order: [] }; // order = mark sequence, for Undo Last
+  let asPos = 'ALL';
+
+  function assistLoad() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(AS_STORE_KEY) || '[]');
+      assist.order = saved.filter((id) => byId.has(id));
+      assist.drafted = new Set(assist.order);
+    } catch {
+      assist.drafted = new Set();
+      assist.order = [];
+    }
+  }
+
+  function assistSave() {
+    localStorage.setItem(AS_STORE_KEY, JSON.stringify(assist.order));
+  }
+
+  function enterAssistant() {
+    assistLoad();
+    $('setup-screen').classList.add('hidden');
+    $('assistant-screen').classList.remove('hidden');
+    const sel = $('as-sort');
+    sel.innerHTML = SOURCES.map((s) => `<option value="${s.key}">${s.name}</option>`).join('');
+    $('as-search').value = '';
+    renderAssistant();
+    $('as-search').focus();
+  }
+
+  function assistMark(id) {
+    if (assist.drafted.has(id)) return;
+    assist.drafted.add(id);
+    assist.order.push(id);
+    assistSave();
+    $('as-search').value = '';
+    renderAssistant();
+    $('as-search').focus();
+  }
+
+  function assistUnmark(id) {
+    assist.drafted.delete(id);
+    assist.order = assist.order.filter((x) => x !== id);
+    assistSave();
+    renderAssistant();
+  }
+
+  function renderAssistant() {
+    $('as-count').textContent =
+      `${assist.drafted.size} drafted · ${DATA.players.length - assist.drafted.size} available`;
+    $('as-gone-chip').textContent = `Drafted (${assist.drafted.size})`;
+
+    // ---- left: searchable list ----
+    const srcKey = $('as-sort').value || 'ktc';
+    const q = $('as-search').value.trim().toLowerCase();
+    const rows = [];
+
+    if (asPos === 'GONE') {
+      // most recently marked first, with undo
+      for (let i = assist.order.length - 1; i >= 0; i--) {
+        const p = byId.get(assist.order[i]);
+        if (q && !p.n.toLowerCase().includes(q)) continue;
+        rows.push(assistRow(p, srcKey, true));
+      }
+    } else {
+      const list = DATA.players
+        .filter((p) => !assist.drafted.has(p.id))
+        .sort((a, b) => a.ranks[srcKey] - b.ranks[srcKey]);
+      let shown = 0;
+      for (const p of list) {
+        if (asPos === 'RK' ? !p.rk : asPos !== 'ALL' && p.pos !== asPos) continue;
+        if (q && !p.n.toLowerCase().includes(q)) continue;
+        if (++shown > 220) break;
+        rows.push(assistRow(p, srcKey, false));
+      }
+    }
+    $('as-tbody').innerHTML = rows.join('') ||
+      '<tr><td colspan="4" style="text-align:center;color:var(--text-dim);padding:24px">No players match</td></tr>';
+
+    // ---- right: top available per source ----
+    const cols = SOURCES.map((s) => {
+      const top = DATA.players
+        .filter((p) => !assist.drafted.has(p.id))
+        .sort((a, b) => a.ranks[s.key] - b.ranks[s.key])
+        .slice(0, 10);
+      const items = top.map((p) => `
+        <button class="src-row" data-id="${p.id}" title="Mark drafted">
+          <span class="sr-rank">${p.ranks[s.key]}</span>
+          <span class="pos-badge pos-${p.pos}">${p.pos}</span>
+          <span class="sr-name">${p.n}</span>
+        </button>`).join('');
+      return `<div class="src-col"><h4>${s.name}${s.real === false ? ' <span class="sc-tag approx">APPROX</span>' : ''}</h4>${items}</div>`;
+    });
+    $('as-cols').innerHTML = cols.join('');
+  }
+
+  function assistRow(p, srcKey, gone) {
+    return `<tr>
+      <td class="col-rank">${p.ranks[srcKey]}</td>
+      <td>
+        <div class="p-name"><span class="pos-badge pos-${p.pos}">${p.pos}</span>${p.n}${p.rk ? '<span class="rookie-badge">R</span>' : ''}</div>
+        <div class="p-sub">${p.tm}</div>
+      </td>
+      <td class="col-age">${p.age ?? '–'}</td>
+      <td class="col-act">${gone
+        ? `<button class="draft-btn undo-btn" data-undo="${p.id}">Undo</button>`
+        : `<button class="draft-btn" data-mark="${p.id}">Gone</button>`}</td>
+    </tr>`;
+  }
+
+  function initAssistantEvents() {
+    $('assistant-btn').addEventListener('click', enterAssistant);
+    $('as-back').addEventListener('click', () => {
+      $('assistant-screen').classList.add('hidden');
+      $('setup-screen').classList.remove('hidden');
+    });
+    $('as-undo').addEventListener('click', () => {
+      const last = assist.order[assist.order.length - 1];
+      if (last != null) assistUnmark(last);
+    });
+    $('as-reset').addEventListener('click', () => {
+      if (!assist.drafted.size || confirm('Clear all drafted marks?')) {
+        assist.drafted = new Set();
+        assist.order = [];
+        assistSave();
+        renderAssistant();
+      }
+    });
+    $('as-search').addEventListener('input', () => {
+      $('as-table-wrap').scrollTop = 0;
+      renderAssistant();
+    });
+    $('as-sort').addEventListener('change', () => {
+      $('as-table-wrap').scrollTop = 0;
+      renderAssistant();
+    });
+    $('as-chips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      asPos = chip.dataset.pos;
+      document.querySelectorAll('#as-chips .chip').forEach((c) => c.classList.toggle('active', c === chip));
+      $('as-table-wrap').scrollTop = 0;
+      renderAssistant();
+    });
+    $('as-tbody').addEventListener('click', (e) => {
+      const mark = e.target.closest('[data-mark]');
+      if (mark) return assistMark(+mark.dataset.mark);
+      const undo = e.target.closest('[data-undo]');
+      if (undo) return assistUnmark(+undo.dataset.undo);
+    });
+    $('as-cols').addEventListener('click', (e) => {
+      const row = e.target.closest('.src-row');
+      if (row) assistMark(+row.dataset.id);
+    });
+  }
+
   // ================= EVENTS =================
   function initDraftRoomEvents() {
     $('player-tbody').addEventListener('click', (e) => {
@@ -558,4 +715,5 @@
   // ================= INIT =================
   initSetup();
   initDraftRoomEvents();
+  initAssistantEvents();
 })();

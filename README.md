@@ -35,6 +35,10 @@ node scripts/serve.js        # serves at http://localhost:8642
   superflex-aware roster construction (every CPU lands 2–3 QBs, capped TE/RB/WR depth)
 - Autopick toggle for your own picks
 - End-of-draft summary ranked by total KTC market value + CSV export
+- **Draft Assistant mode** — companion for real drafts: mark players as drafted
+  (searchable list or one tap in the source columns), see the top available players
+  according to every ranking site side by side, undo/reset, and progress survives
+  page refreshes via localStorage
 
 ## Refreshing the rankings
 

@@ -50,6 +50,7 @@
       </div>
 
       <button id="start-btn" class="primary-btn">Start Draft</button>
+      <button id="assistant-btn" class="secondary-btn">Open Draft Assistant</button>
       <p class="source-note" id="source-note"></p>
     </div>
   </div>
@@ -112,6 +113,54 @@
           </div>
           <div id="teams-roster"></div>
         </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ============ DRAFT ASSISTANT ============ -->
+  <div id="assistant-screen" class="screen hidden">
+    <header class="draft-header">
+      <div class="dh-left">
+        <span class="dh-logo">🏈 Draft Assistant</span>
+        <span class="dh-settings" id="as-count"></span>
+      </div>
+      <div class="dh-right">
+        <button id="as-undo" class="ghost-btn">Undo Last</button>
+        <button id="as-reset" class="ghost-btn">Reset</button>
+        <button id="as-back" class="ghost-btn">Exit</button>
+      </div>
+    </header>
+
+    <div class="draft-main">
+      <!-- search & mark panel -->
+      <section class="players-panel">
+        <div class="pp-controls">
+          <input type="text" id="as-search" placeholder="Search players..." />
+          <select id="as-sort" title="Sort by this site's rankings"></select>
+        </div>
+        <div class="pos-chips" id="as-chips">
+          <button class="chip active" data-pos="ALL">All</button>
+          <button class="chip chip-qb" data-pos="QB">QB</button>
+          <button class="chip chip-rb" data-pos="RB">RB</button>
+          <button class="chip chip-wr" data-pos="WR">WR</button>
+          <button class="chip chip-te" data-pos="TE">TE</button>
+          <button class="chip" data-pos="RK">Rookies</button>
+          <button class="chip" data-pos="GONE" id="as-gone-chip">Drafted (0)</button>
+        </div>
+        <div class="player-table-wrap" id="as-table-wrap">
+          <table class="player-table">
+            <thead>
+              <tr><th class="col-rank">RK</th><th>Player</th><th class="col-age">Age</th><th class="col-act"></th></tr>
+            </thead>
+            <tbody id="as-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- top available per source -->
+      <section class="right-panel">
+        <div class="as-cols-head">Top available by ranking <span class="as-cols-hint">— tap a player to mark drafted</span></div>
+        <div class="as-cols" id="as-cols"></div>
       </section>
     </div>
   </div>
