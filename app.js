@@ -104,14 +104,14 @@
       );
     }
 
-    // per-CPU positional tendencies for personality
+    // per-CPU positional tendencies for personality (mild, and ramped in after early rounds)
     const tendencies = [];
     for (let t = 0; t < teams; t++) {
       tendencies.push({
-        QB: 0.92 + Math.random() * 0.16,
-        RB: 0.92 + Math.random() * 0.16,
-        WR: 0.92 + Math.random() * 0.16,
-        TE: 0.92 + Math.random() * 0.16,
+        QB: 0.95 + Math.random() * 0.1,
+        RB: 0.95 + Math.random() * 0.1,
+        WR: 0.95 + Math.random() * 0.1,
+        TE: 0.95 + Math.random() * 0.1,
       });
     }
 
@@ -193,7 +193,9 @@
     const round = draft.pickOrder[draft.cur].round;
     let v = player.vals[srcKey];
     v *= needMultiplier(player.pos, counts, round, settings.rounds);
-    v *= draft.tendencies[team][player.pos];
+    // personality ramps in like needs do — early rounds stay best-player-available
+    const t = draft.tendencies[team][player.pos];
+    v *= 1 + (t - 1) * Math.min(1, round / 5);
     return v;
   }
 
@@ -203,16 +205,19 @@
     for (const id of draft.available) avail.push(byId.get(id));
     avail.sort((a, b) => b.vals[srcKey] - a.vals[srcKey]);
 
-    // score a wider window by NEED-ADJUSTED value so scarce positions can surface,
-    // then keep the best 12 as realistic candidates
-    const candidates = avail
+    // score a wider window by NEED-ADJUSTED value so scarce positions can surface
+    const scored = avail
       .slice(0, 40)
       .map((p) => ({ p, adj: adjustedValue(p, team, srcKey) }))
-      .sort((a, b) => b.adj - a.adj)
-      .slice(0, 12)
-      .map((c) => ({ ...c, w: Math.pow(Math.max(c.adj, 1), 5) }));
-    // mild preference for earlier board position
-    candidates.forEach((c, i) => (c.w *= Math.pow(0.87, i)));
+      .sort((a, b) => b.adj - a.adj);
+
+    // gap-sensitive softmax: probability decays with distance from the best
+    // available value, so tier gaps are respected — a player far ahead of the
+    // field is a near-lock, while flat boards (late rounds) stay random
+    const best = scored[0].adj;
+    const candidates = scored.filter((c) => c.adj >= best * 0.9).slice(0, 10);
+    const temp = Math.max(best * 0.028, 3);
+    candidates.forEach((c) => (c.w = Math.exp((c.adj - best) / temp)));
 
     const total = candidates.reduce((s, c) => s + c.w, 0);
     let roll = Math.random() * total;
