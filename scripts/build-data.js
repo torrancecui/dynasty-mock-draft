@@ -61,7 +61,7 @@ function normName(name) {
 async function main() {
   console.log('Fetching KeepTradeCut (superflex)...');
   const ktcHtml = await fetchText('https://keeptradecut.com/dynasty-rankings?format=2');
-  const ktcMatch = ktcHtml.match(/var playersArray = (\[.*?\]);/s);
+  const ktcMatch = ktcHtml.match(/<script type="application\/json" id="ktc-players">(\[.*?\])<\/script>/s);
   if (!ktcMatch) throw new Error('KTC playersArray not found — page layout may have changed');
   const ktcAll = JSON.parse(ktcMatch[1]);
   // RDP entries are rookie draft picks; this is a startup player mock, so drop them
